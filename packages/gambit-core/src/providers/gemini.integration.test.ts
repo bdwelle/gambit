@@ -19,7 +19,10 @@ test("Gemini integration: basic chat", async () => {
   const provider = createGeminiProvider({ apiKey: apiKey ?? "unused" });
   const result = await provider.chat({
     model: "gemini-2.5-flash",
-    messages: [{ role: "user", content: "Say 'hello world' and nothing else." }],
+    messages: [{
+      role: "user",
+      content: "Say 'hello world' and nothing else.",
+    }],
   });
 
   assertEquals(result.message.role, "assistant");
@@ -34,7 +37,7 @@ test("Gemini integration: streaming chat", async () => {
   }
   const provider = createGeminiProvider({ apiKey: apiKey ?? "unused" });
   const chunks: string[] = [];
-  
+
   const result = await provider.chat({
     model: "gemini-2.5-flash",
     messages: [{ role: "user", content: "Count to 5." }],

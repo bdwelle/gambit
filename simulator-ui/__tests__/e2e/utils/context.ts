@@ -4,9 +4,9 @@ import * as path from "@std/path";
 import {
   type Browser,
   type CDPSession,
+  type ConsoleMessage,
   launch,
   type Page,
-  type ConsoleMessage,
 } from "puppeteer-core";
 
 function getErrorMessage(err: unknown): string {

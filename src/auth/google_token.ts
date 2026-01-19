@@ -1,7 +1,4 @@
-import {
-  GEMINI_CLIENT_ID,
-  GEMINI_CLIENT_SECRET,
-} from "./google_constants.ts";
+import { GEMINI_CLIENT_ID, GEMINI_CLIENT_SECRET } from "./google_constants.ts";
 import type { OAuthAuthDetails } from "./google_auth_store.ts";
 
 const ACCESS_TOKEN_EXPIRY_BUFFER_MS = 60_000;

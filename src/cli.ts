@@ -162,7 +162,6 @@ async function main() {
       return;
     }
 
-
     if (args.cmd === "grade") {
       const graderPath = args.graderPath ?? deckPath;
       if (!graderPath) {
@@ -238,12 +237,10 @@ async function main() {
       });
     }
 
-
     const provider = createDispatchingProvider({
       providers,
       defaultProvider: openRouterProvider,
     });
-
 
     const tracerFns: Array<
       (

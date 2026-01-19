@@ -1,11 +1,20 @@
-import { authorizeGemini, exchangeGemini, exchangeGeminiWithVerifier } from "../auth/google_oauth.ts";
+import {
+  authorizeGemini,
+  exchangeGemini,
+  exchangeGeminiWithVerifier,
+} from "../auth/google_oauth.ts";
 import { startOAuthListener } from "../auth/google_server.ts";
 import { readAuthState, writeAuthState } from "../auth/google_auth_store.ts";
-import { accessTokenExpired, refreshAccessToken } from "../auth/google_token.ts";
+import {
+  accessTokenExpired,
+  refreshAccessToken,
+} from "../auth/google_token.ts";
 
 const logger = console;
 
-function parseOAuthCallbackInput(input: string): { code?: string; state?: string } {
+function parseOAuthCallbackInput(
+  input: string,
+): { code?: string; state?: string } {
   const trimmed = input.trim();
   if (!trimmed) return {};
 
@@ -50,10 +59,14 @@ export async function handleAuthCommand(provider: string | undefined) {
   let listener = null;
   try {
     listener = await startOAuthListener();
-    logger.log("Waiting for OAuth callback on http://localhost:8085/oauth2callback ...");
+    logger.log(
+      "Waiting for OAuth callback on http://localhost:8085/oauth2callback ...",
+    );
   } catch {
     listener = null;
-    logger.log("Could not start local callback listener; paste the callback URL or code manually.");
+    logger.log(
+      "Could not start local callback listener; paste the callback URL or code manually.",
+    );
   }
 
   let exchangeResult;
@@ -72,7 +85,9 @@ export async function handleAuthCommand(provider: string | undefined) {
       await listener.close();
     }
   } else {
-    const manual = await promptInput("> Paste the full redirect URL or authorization code: ");
+    const manual = await promptInput(
+      "> Paste the full redirect URL or authorization code: ",
+    );
     const { code, state } = parseOAuthCallbackInput(manual);
     if (!code) {
       logger.error("Missing authorization code.");
@@ -139,4 +154,3 @@ export async function loadGoogleAuthFromStore() {
 
   return stored;
 }
-

@@ -12,7 +12,8 @@ Requirements: Node.js 18+ and either
 
 - `OPENROUTER_API_KEY` (set `OPENROUTER_BASE_URL` if you proxy OpenRouter-style
   APIs), or
-- a Google AI account with [Gemini Code Assist access](https://developers.google.com/gemini-code-assist/docs/overview)
+- a Google AI account with
+  [Gemini Code Assist access](https://developers.google.com/gemini-code-assist/docs/overview)
   (Google AI Pro/Ultra includes this).
 
 Run the CLI directly with npx (no install):
@@ -97,8 +98,8 @@ npx @bolt-foundry/gambit <command>
 
 ### Google OAuth login (Gemini Code Assist)
 
-If you want to use your Google AI Pro/Gemini Code Assist subscription instead
-of an API key:
+If you want to use your Google AI Pro/Gemini Code Assist subscription instead of
+an API key:
 
 ```
 export GEMINI_PROJECT_ID="your-project-id"   # where your Code Assist access lives

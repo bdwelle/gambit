@@ -15,11 +15,11 @@ export function createDispatchingProvider(opts: {
 
       for (const { prefix, provider } of opts.providers) {
         if (modelName.startsWith(prefix)) {
-      if (Deno.env.get("GAMBIT_DEBUG")) {
-        logger.log(
-          `[Dispatcher] Routing model '${modelName}' to provider for prefix '${prefix}'`,
-        );
-      }
+          if (Deno.env.get("GAMBIT_DEBUG")) {
+            logger.log(
+              `[Dispatcher] Routing model '${modelName}' to provider for prefix '${prefix}'`,
+            );
+          }
 
           const strippedModel = modelName.substring(prefix.length);
           return provider.chat({
@@ -32,7 +32,7 @@ export function createDispatchingProvider(opts: {
       if (Deno.env.get("GAMBIT_DEBUG")) {
         logger.log(
           `[Dispatcher] Model '${modelName}' has no prefix. Using default provider ` +
-          `(${opts.defaultProvider?.constructor?.name ?? "unknown"}).`,
+            `(${opts.defaultProvider?.constructor?.name ?? "unknown"}).`,
         );
       }
       return opts.defaultProvider.chat(input);

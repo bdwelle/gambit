@@ -1,13 +1,13 @@
 // @ts-ignore: Deno read-only file system
 import {
-  GoogleGenerativeAI,
-  GenerativeModel,
   Content,
-  Part,
+  FunctionCallingMode,
   FunctionDeclaration,
   FunctionDeclarationSchema,
   FunctionDeclarationSchemaProperty,
-  FunctionCallingMode,
+  GenerativeModel,
+  GoogleGenerativeAI,
+  Part,
   Schema,
   SchemaType,
 } from "@google/generative-ai";
@@ -16,12 +16,10 @@ const CODE_ASSIST_ENDPOINT = "https://cloudcode-pa.googleapis.com";
 const CODE_ASSIST_HEADERS = {
   "User-Agent": "google-api-nodejs-client/9.15.1",
   "X-Goog-Api-Client": "gl-node/22.17.0",
-  "Client-Metadata": "ideType=IDE_UNSPECIFIED,platform=PLATFORM_UNSPECIFIED,pluginType=GEMINI",
+  "Client-Metadata":
+    "ideType=IDE_UNSPECIFIED,platform=PLATFORM_UNSPECIFIED,pluginType=GEMINI",
 } as const;
-import type {
-  ModelMessage,
-  ModelProvider,
-} from "../types.ts";
+import type { ModelMessage, ModelProvider } from "../types.ts";
 
 const logger = console;
 
@@ -30,7 +28,8 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function isStringArray(value: unknown): value is string[] {
-  return Array.isArray(value) && value.every((item) => typeof item === "string");
+  return Array.isArray(value) &&
+    value.every((item) => typeof item === "string");
 }
 
 type CodeAssistRequest = {
@@ -128,7 +127,9 @@ function buildCodeAssistChatRequest(args: {
 function extractToolCallsFromParts(parts: Array<Record<string, unknown>>) {
   const toolCalls: ModelMessage["tool_calls"] = [];
   for (const part of parts) {
-    const fn = part.functionCall as { name?: string; args?: unknown } | undefined;
+    const fn = part.functionCall as
+      | { name?: string; args?: unknown }
+      | undefined;
     if (!fn?.name) continue;
     toolCalls.push({
       id: `call_${crypto.randomUUID()}`,
@@ -145,8 +146,13 @@ function extractToolCallsFromParts(parts: Array<Record<string, unknown>>) {
 async function parseSseResponse(
   response: Response,
   onText?: (chunk: string) => void,
-): Promise<{ text: string; toolCalls?: ModelMessage["tool_calls"]; finishReason?: string }>
-{
+): Promise<
+  {
+    text: string;
+    toolCalls?: ModelMessage["tool_calls"];
+    finishReason?: string;
+  }
+> {
   if (!response.body) {
     return { text: "" };
   }
@@ -169,8 +175,11 @@ async function parseSseResponse(
         const json = line.slice(5).trim();
         if (json) {
           try {
-            const parsed = JSON.parse(json) as { response?: CodeAssistResponse };
-            const payload = parsed.response ?? parsed as unknown as CodeAssistResponse;
+            const parsed = JSON.parse(json) as {
+              response?: CodeAssistResponse;
+            };
+            const payload = parsed.response ??
+              parsed as unknown as CodeAssistResponse;
             const parts = payload.candidates?.[0]?.content?.parts ?? [];
             const chunkText = extractTextFromParts(parts);
             if (chunkText) {
@@ -178,7 +187,8 @@ async function parseSseResponse(
               onText?.(chunkText);
             }
             toolCalls = extractToolCallsFromParts(parts) ?? toolCalls;
-            finishReason = payload.candidates?.[0]?.finishReason ?? finishReason;
+            finishReason = payload.candidates?.[0]?.finishReason ??
+              finishReason;
           } catch {
             // ignore parse errors
           }
@@ -295,7 +305,9 @@ export function createGeminiProvider(opts: {
   const apiKey = opts.apiKey ?? Deno.env.get("GOOGLE_API_KEY") ??
     Deno.env.get("GEMINI_API_KEY");
   if (!opts.client && !apiKey && !accessToken) {
-    throw new Error("GOOGLE_API_KEY or GOOGLE_ACCESS_TOKEN is required for Gemini");
+    throw new Error(
+      "GOOGLE_API_KEY or GOOGLE_ACCESS_TOKEN is required for Gemini",
+    );
   }
 
   const usingOAuth = Boolean(accessToken);
@@ -320,7 +332,6 @@ export function createGeminiProvider(opts: {
         );
       }
 
-
       const systemInstruction = input.messages.find(
         (m) => m.role === "system",
       )?.content;
@@ -331,14 +342,22 @@ export function createGeminiProvider(opts: {
           functionDeclarations: input.tools.map((t): FunctionDeclaration => {
             const rawParams = t.function.parameters;
             const rawType = isRecord(rawParams) ? rawParams.type : undefined;
-            const rawProps = isRecord(rawParams) ? rawParams.properties : undefined;
-            const rawRequired = isRecord(rawParams) ? rawParams.required : undefined;
+            const rawProps = isRecord(rawParams)
+              ? rawParams.properties
+              : undefined;
+            const rawRequired = isRecord(rawParams)
+              ? rawParams.required
+              : undefined;
 
-            const schemaType = typeof rawType === "string" && rawType.toLowerCase() === "object"
-              ? SchemaType.OBJECT
-              : SchemaType.OBJECT;
+            const schemaType =
+              typeof rawType === "string" && rawType.toLowerCase() === "object"
+                ? SchemaType.OBJECT
+                : SchemaType.OBJECT;
 
-            const properties: Record<string, FunctionDeclarationSchemaProperty> = isRecord(rawProps)
+            const properties: Record<
+              string,
+              FunctionDeclarationSchemaProperty
+            > = isRecord(rawProps)
               ? Object.fromEntries(
                 Object.entries(rawProps).map(([key, value]) => {
                   const schemaValue: Schema = isRecord(value)
@@ -364,7 +383,6 @@ export function createGeminiProvider(opts: {
         }]
         : undefined;
 
-
       const hasToolResponse = input.messages.some((msg) => msg.role === "tool");
       const baseModelParams = {
         model: input.model,
@@ -378,9 +396,11 @@ export function createGeminiProvider(opts: {
               mode: hasToolResponse
                 ? FunctionCallingMode.AUTO
                 : FunctionCallingMode.ANY,
-              ...(hasToolResponse
-                ? {}
-                : { allowedFunctionNames: tools[0]?.functionDeclarations?.map((fn) => fn.name) }),
+              ...(hasToolResponse ? {} : {
+                allowedFunctionNames: tools[0]?.functionDeclarations?.map((
+                  fn,
+                ) => fn.name),
+              }),
             },
           }
           : undefined,
@@ -447,7 +467,9 @@ export function createGeminiProvider(opts: {
           headers.set("Accept", "text/event-stream");
         }
 
-        const endpoint = `${CODE_ASSIST_ENDPOINT}/v1internal:${input.stream ? "streamGenerateContent" : "generateContent"}?alt=sse`;
+        const endpoint = `${CODE_ASSIST_ENDPOINT}/v1internal:${
+          input.stream ? "streamGenerateContent" : "generateContent"
+        }?alt=sse`;
         const response = await fetch(endpoint, {
           method: "POST",
           headers,

@@ -8,7 +8,8 @@ function readEnv(name: string, fallback: string): string {
 
 // Public OAuth client bundled with Gambit. We split the pieces so GitHub's
 // secret scanners leave it alone; at runtime this reconstructs the exact value.
-const DEFAULT_CLIENT_ID = "681255809395-oo8ft2oprdrnp9e3aqf6av3hmdib135j.apps.googleusercontent.com";
+const DEFAULT_CLIENT_ID =
+  "681255809395-oo8ft2oprdrnp9e3aqf6av3hmdib135j.apps.googleusercontent.com";
 
 const DEFAULT_CLIENT_SECRET = "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";
 
