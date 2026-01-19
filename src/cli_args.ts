@@ -13,6 +13,7 @@ const COMMANDS = [
   "test-bot",
   "grade",
   "export",
+  "auth",
 ] as const;
 
 type Command = typeof COMMANDS[number];
@@ -28,6 +29,7 @@ const HELP_COMMANDS = [
   "serve",
   "test-bot",
   "grade",
+  "auth",
 ] as const;
 
 type HelpCommand = typeof HELP_COMMANDS[number];

@@ -21,6 +21,7 @@ import { runTestBotLoop } from "./commands/test_bot.ts";
 import { runGraderAgainstState } from "./commands/grade.ts";
 import { exportBundle } from "./commands/export.ts";
 import { handleInitCommand } from "./commands/init.ts";
+import { handleAuthCommand, loadGoogleAuthFromStore } from "./commands/auth.ts";
 import { parseBotInput, parseInit, parseMessage } from "./cli_utils.ts";
 import {
   isHelpCommand,
@@ -148,6 +149,12 @@ async function main() {
       return;
     }
 
+    if (args.cmd === "auth") {
+      const provider = args.deckPath;
+      await handleAuthCommand(provider);
+      return;
+    }
+
     const deckPath = args.deckPath ?? args.exportDeckPath ?? "";
 
     if (args.cmd === "repl" && !args.deckPath) {
@@ -211,12 +218,26 @@ async function main() {
     const providers: { prefix: string; provider: ModelProvider }[] = [];
     const googleApiKey = Deno.env.get("GOOGLE_API_KEY") ??
       Deno.env.get("GEMINI_API_KEY");
-    if (googleApiKey) {
+    const googleAccessToken = Deno.env.get("GOOGLE_ACCESS_TOKEN") ??
+      Deno.env.get("GEMINI_ACCESS_TOKEN");
+    const storedGoogleAuth = await loadGoogleAuthFromStore();
+    if (googleApiKey || googleAccessToken || storedGoogleAuth?.access) {
+      if (storedGoogleAuth?.access) {
+        Deno.env.set("GOOGLE_ACCESS_TOKEN", storedGoogleAuth.access);
+      } else if (googleAccessToken) {
+        Deno.env.set("GOOGLE_ACCESS_TOKEN", googleAccessToken);
+      }
+      if (storedGoogleAuth?.projectId) {
+        Deno.env.set("GEMINI_AUTH_PROJECT_ID", storedGoogleAuth.projectId);
+      }
       providers.push({
         prefix: "google/",
-        provider: createGeminiProvider({ apiKey: googleApiKey }),
+        provider: createGeminiProvider({
+          apiKey: googleApiKey ?? "unused",
+        }),
       });
     }
+
 
     const provider = createDispatchingProvider({
       providers,

@@ -39,12 +39,14 @@ Deno.test("toGoogleContent maps messages correctly", () => {
   // Assistant message with tool call
   assertEquals(googleContent[1].role, "model");
   assertEquals(googleContent[1].parts[0], { text: "I will call a tool." });
-  assertEquals(googleContent[1].parts[1], {
+  const part = googleContent[1].parts[1] as unknown as Record<string, unknown>;
+  const { thoughtSignature: _sig, ...rest } = part;
+  assertEquals(rest, {
     functionCall: { name: "get_weather", args: { city: "SF" } },
   });
 
   // Tool response message
-  assertEquals(googleContent[2].role, "function");
+  assertEquals(googleContent[2].role, "user");
   assertEquals(googleContent[2].parts[0], {
     functionResponse: {
       name: "get_weather",
@@ -101,6 +103,11 @@ Deno.test("createGeminiProvider uses mock client", async () => {
       return mockModel;
     },
   };
+
+  Deno.env.set("GOOGLE_ACCESS_TOKEN", "");
+  Deno.env.set("GEMINI_ACCESS_TOKEN", "");
+  Deno.env.set("GEMINI_PROJECT_ID", "");
+  Deno.env.set("GOOGLE_CLOUD_PROJECT", "");
 
   const provider = createGeminiProvider({
     apiKey: "test-key",

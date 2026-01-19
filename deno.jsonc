@@ -62,6 +62,8 @@
     "@deno/dnt": "jsr:@deno/dnt@^0.42.3", // dev
     "@std/front-matter": "jsr:@std/front-matter@^1.0.9",
     "@std/fs": "jsr:@std/fs@^1.0.20",
+    "@std/http": "jsr:@std/http@^1.0.8",
+    "@std/http/server": "jsr:@std/http@^1.0.8/server",
     "@std/jsonc": "jsr:@std/jsonc@^1.0.2", // dev
     "@std/path": "jsr:@std/path@^1.0.6",
     "@std/cli": "jsr:@std/cli@^1.0.7",

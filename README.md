@@ -8,18 +8,39 @@ debug with a built-in UI.
 
 ## Quickstart
 
-Requirements: Node.js 18+ and `OPENROUTER_API_KEY` (set `OPENROUTER_BASE_URL` if
-you proxy OpenRouter-style APIs).
+Requirements: Node.js 18+ and either
+
+- `OPENROUTER_API_KEY` (set `OPENROUTER_BASE_URL` if you proxy OpenRouter-style
+  APIs), or
+- a Google AI account with [Gemini Code Assist access](https://developers.google.com/gemini-code-assist/docs/overview)
+  (Google AI Pro/Ultra includes this).
 
 Run the CLI directly with npx (no install):
 
 ```
+# Example using OpenRouter
 export OPENROUTER_API_KEY=...
+npx @bolt-foundry/gambit init
+
+# Example using Google OAuth
+# (Uses the built-in public client automatically; set your own if needed.)
+npx @bolt-foundry/gambit auth google
 npx @bolt-foundry/gambit init
 ```
 
 Downloads example files (hello decks plus the `examples/` gallery) and sets
 environment variables.
+
+### Local install (dev)
+
+When running the local CLI from this repo, use the install script so the import
+map resolves workspace paths:
+
+```
+./scripts/install_local.sh
+```
+
+This installs a `gambit` binary into `~/.deno/bin`.
 
 Run an example in the terminal (`repl`):
 
@@ -73,6 +94,23 @@ Run with npx (no install):
 ```
 npx @bolt-foundry/gambit <command>
 ```
+
+### Google OAuth login (Gemini Code Assist)
+
+If you want to use your Google AI Pro/Gemini Code Assist subscription instead
+of an API key:
+
+```
+export GEMINI_PROJECT_ID="your-project-id"   # where your Code Assist access lives
+
+npx @bolt-foundry/gambit auth google
+```
+
+We ship a public OAuth client baked into the CLI; set your own values above if
+you need a different Google Cloud project. The login flow opens a browser,
+stores tokens in `~/.config/gambit/auth.json`, and reuses them on future runs.
+
+Then run decks with `model = "google/<model>"`.
 
 Run a deck once:
 
