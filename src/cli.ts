@@ -4,7 +4,12 @@
  *
  * @module
  */
-import { createOpenRouterProvider } from "@bolt-foundry/gambit-core";
+import {
+  createDispatchingProvider,
+  createGeminiProvider,
+  createOpenRouterProvider,
+  ModelProvider,
+} from "@bolt-foundry/gambit-core";
 import { parse } from "@std/jsonc";
 import * as path from "@std/path";
 import { load as loadDotenv } from "@std/dotenv";
@@ -16,6 +21,7 @@ import { runTestBotLoop } from "./commands/test_bot.ts";
 import { runGraderAgainstState } from "./commands/grade.ts";
 import { exportBundle } from "./commands/export.ts";
 import { handleInitCommand } from "./commands/init.ts";
+import { handleAuthCommand, loadGoogleAuthFromStore } from "./commands/auth.ts";
 import { parseBotInput, parseInit, parseMessage } from "./cli_utils.ts";
 import {
   isHelpCommand,
@@ -143,16 +149,17 @@ async function main() {
       return;
     }
 
+    if (args.cmd === "auth") {
+      const provider = args.deckPath;
+      await handleAuthCommand(provider);
+      return;
+    }
+
     const deckPath = args.deckPath ?? args.exportDeckPath ?? "";
 
     if (args.cmd === "repl" && !args.deckPath) {
       printCommandUsage("repl");
       return;
-    }
-
-    if (!deckPath && args.cmd !== "grade" && args.cmd !== "export") {
-      printUsage();
-      Deno.exit(1);
     }
 
     if (args.cmd === "grade") {
@@ -194,13 +201,45 @@ async function main() {
       return;
     }
 
-    const apiKey = Deno.env.get("OPENROUTER_API_KEY");
-    if (!apiKey) {
-      throw new Error("OPENROUTER_API_KEY is required");
+    // Default provider is OpenRouter
+    const openRouterApiKey = Deno.env.get("OPENROUTER_API_KEY");
+    if (!openRouterApiKey) {
+      throw new Error(
+        "OPENROUTER_API_KEY is required as the default provider.",
+      );
     }
-    const provider = createOpenRouterProvider({
-      apiKey,
+    const openRouterProvider = createOpenRouterProvider({
+      apiKey: openRouterApiKey,
       baseURL: Deno.env.get("OPENROUTER_BASE_URL") ?? undefined,
+    });
+
+    // Setup providers for the dispatcher
+    const providers: { prefix: string; provider: ModelProvider }[] = [];
+    const googleApiKey = Deno.env.get("GOOGLE_API_KEY") ??
+      Deno.env.get("GEMINI_API_KEY");
+    const googleAccessToken = Deno.env.get("GOOGLE_ACCESS_TOKEN") ??
+      Deno.env.get("GEMINI_ACCESS_TOKEN");
+    const storedGoogleAuth = await loadGoogleAuthFromStore();
+    if (googleApiKey || googleAccessToken || storedGoogleAuth?.access) {
+      if (storedGoogleAuth?.access) {
+        Deno.env.set("GOOGLE_ACCESS_TOKEN", storedGoogleAuth.access);
+      } else if (googleAccessToken) {
+        Deno.env.set("GOOGLE_ACCESS_TOKEN", googleAccessToken);
+      }
+      if (storedGoogleAuth?.projectId) {
+        Deno.env.set("GEMINI_AUTH_PROJECT_ID", storedGoogleAuth.projectId);
+      }
+      providers.push({
+        prefix: "google/",
+        provider: createGeminiProvider({
+          apiKey: googleApiKey ?? "unused",
+        }),
+      });
+    }
+
+    const provider = createDispatchingProvider({
+      providers,
+      defaultProvider: openRouterProvider,
     });
 
     const tracerFns: Array<

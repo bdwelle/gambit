@@ -55,12 +55,15 @@
   },
   "compilerOptions": {
     "jsx": "react-jsx",
-    "jsxImportSource": "react"
+    "jsxImportSource": "react",
+    "lib": ["dom", "dom.iterable", "es2022", "deno.ns"]
   },
   "imports": {
     "@deno/dnt": "jsr:@deno/dnt@^0.42.3", // dev
     "@std/front-matter": "jsr:@std/front-matter@^1.0.9",
     "@std/fs": "jsr:@std/fs@^1.0.20",
+    "@std/http": "jsr:@std/http@^1.0.8",
+    "@std/http/server": "jsr:@std/http@^1.0.8/server",
     "@std/jsonc": "jsr:@std/jsonc@^1.0.2", // dev
     "@std/path": "jsr:@std/path@^1.0.6",
     "@std/cli": "jsr:@std/cli@^1.0.7",
@@ -74,6 +77,8 @@
     "zod": "npm:zod@^3.23.8",
     "zod-to-json-schema": "npm:zod-to-json-schema@^3.23.0",
     "@openai/openai": "npm:openai@^4.78.1",
+    "@google/generative-ai": "npm:@google/generative-ai@^0.24.1",
+    "puppeteer-core": "npm:puppeteer-core@^24.35.0",
     "react": "npm:react@^19.2.0",
     "react-dom": "npm:react-dom@^19.2.0"
   },
